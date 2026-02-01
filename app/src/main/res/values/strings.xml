@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">自动允许</string>
+    <string name="accessibility_service_description">自动点击"连接至Windows"的允许按钮</string>
+</resources>
