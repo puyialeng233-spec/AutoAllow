@@ -2,12 +2,6 @@ package com.autoallow
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.content.Intent
-import android.os.Build
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.util.Log
@@ -16,8 +10,6 @@ class AutoAllowService : AccessibilityService() {
 
     companion object {
         private const val TAG = "AutoAllow"
-        private const val CHANNEL_ID = "auto_allow_channel"
-        private const val NOTIFICATION_ID = 1
         // 目标包名列表
         private val TARGET_PACKAGES = setOf(
             "com.hihonor.linktowindowsservice",
@@ -44,51 +36,7 @@ class AutoAllowService : AccessibilityService() {
             notificationTimeout = 100
         }
         serviceInfo = info
-        
-        // 启动前台服务
-        startForegroundNotification()
-        
         Log.d(TAG, "AutoAllow 无障碍服务已启动")
-    }
-
-    private fun startForegroundNotification() {
-        createNotificationChannel()
-        
-        val intent = Intent(this, MainActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(
-            this, 0, intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val notification = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Notification.Builder(this, CHANNEL_ID)
-        } else {
-            @Suppress("DEPRECATION")
-            Notification.Builder(this)
-        }.apply {
-            setContentTitle("自动允许")
-            setContentText("正在监控「连接至Windows」弹窗")
-            setSmallIcon(android.R.drawable.ic_menu_preferences)
-            setContentIntent(pendingIntent)
-            setOngoing(true)
-        }.build()
-
-        startForeground(NOTIFICATION_ID, notification)
-    }
-
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "自动允许服务",
-                NotificationManager.IMPORTANCE_LOW
-            ).apply {
-                description = "保持服务在后台运行"
-                setShowBadge(false)
-            }
-            val manager = getSystemService(NotificationManager::class.java)
-            manager.createNotificationChannel(channel)
-        }
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -151,10 +99,5 @@ class AutoAllowService : AccessibilityService() {
 
     override fun onInterrupt() {
         Log.d(TAG, "AutoAllow 无障碍服务中断")
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        stopForeground(STOP_FOREGROUND_REMOVE)
     }
 }
